@@ -1,5 +1,6 @@
 $(function(){
     $('#search-box-holder').oksearch({
+        height: 36,
         searchTypes: [{
             id: 'device',
             name: '设备',

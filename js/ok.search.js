@@ -2,6 +2,7 @@
     'use strict';
 
     var defaults = {
+        height: 32,
         searchTypes: [{
             id: 'device',
             name: '搜索',
@@ -19,6 +20,13 @@
         this.element = element;
         this.options = $.extend(true, {}, defaults, options);
 
+        if (!this.options.height || 'number' != typeof this.options.height) {
+            this.options.height = 32;
+        }
+        if(this.options.height < 26){
+            this.options.height = 26;
+        }
+
         this.searchValue = {
             searchTypeID: '',
             searchTypeName: '',
@@ -35,6 +43,12 @@
 
         var baseHtml = '<div class="search-box"><div class="search-type"><span></span><a></a></div><div class="search-holder"><input class="search-input" type="text" name="" /></div><ul class="search-type-select"></ul><ul class="search-input-select"></ul></div>';
         $(this.element).html(baseHtml);
+        $(this.element).find('.search-box').height(this.options.height);
+        $(this.element).find('.search-type').css('line-height', (this.options.height - 1) + 'px');
+        $(this.element).find('.search-type a').css('background-position', ('0px ' + (this.options.height - 11) / 2) + 'px');
+        $(this.element).find('.search-type-select').css('top', this.options.height + 1);
+        $(this.element).find('.search-input-select').css('top', this.options.height + 1);
+        $(this.element).find('.search-input-selected').css('line-height', (this.options.height - 6) + 'px');
 
         for (var i = 0, len = this.options.searchTypes.length; i < len; i++) {
             var searchType = this.options.searchTypes[i];
@@ -172,7 +186,6 @@
                 $searchInputSelects.first().addClass('selected');
             } else {
                 var $nexts = $selectedSearchInput.next();
-                console.log($nexts);
                 if (0 == $nexts.length) {
                     return;
                 } else {
@@ -220,31 +233,34 @@
 
     OKSearch.prototype.addSearchInputSelected = function() {
         $(this.element).find('.search-box').append('<span class="search-input-selected">' + this.searchValue.searchColumnName + '：' + this.searchValue.searchWord + '<a>X</a></span>');
+        $(this.element).find('.search-input-selected').css('line-height', (this.options.height - 6) + 'px');
     };
 
-    function getBrowserInfo() {
-        var Sys = {};
-        var ua = navigator.userAgent.toLowerCase();
-        var re = /(msie|firefox|chrome|opera|version).*?([\d.]+)/;
-        var m = ua.match(re);
-        Sys.browser = m[1].replace(/version/, "'safari");
-        Sys.version = m[2];
-        return Sys;
+    var ua = navigator.userAgent.toLowerCase();
+    var Browser = {
+        isChrome: ua.indexOf('chrome') > -1 && ua.indexOf('edge') == -1,
+        isFirefox: ua.indexOf('firefox') > -1,
+        isIE: ua.indexOf('msie') > -1,
+        isEdge: ua.indexOf('edge') > -1,
+        ieVersion: function() {
+            if (ua.indexOf('edge') == -1 && ua.indexOf('msie') > -1) {
+                return ua.match(/(msie).*?([\d.]+)/)[2];
+            }
+        }
     }
 
     $.fn.oksearch = function(options) {
+
         var okSearchInstance;
 
         if (!this.length) {
             throw new Error('okSearch cannot be instantiated on an empty selector.');
         }
-        var browserInfo = getBrowserInfo();
-        if ('chrome' == browserInfo.browser || ('msie' == browserInfo.browser && parseInt(browserInfo.version) >= 9) || 'firefox' ==browserInfo.browser) {
+        if (Browser.isEdge || Browser.isFirefox || Browser.isChrome || (Browser.isIE && parseInt(Browser.ieVersion()) >= 9)) {
             if (!this.data('plugin_okSearch')) {
                 okSearchInstance = new OKSearch(this, options);
                 return okSearchInstance;
             }
-
             return this.data('plugin_okSearch');
         } else {
             throw new Error('okSearch now only support chrome & firefox & IE9+!');
