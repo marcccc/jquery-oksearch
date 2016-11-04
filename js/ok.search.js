@@ -256,9 +256,17 @@
         if (!this.length) {
             throw new Error('okSearch cannot be instantiated on an empty selector.');
         }
+
+        if (this.length > 1) {
+            throw new Error(
+                "okSearch does not support multiple elements yet. Make sure " +
+                "your okSearch selector returns only one element.");
+        }
+
         if (Browser.isEdge || Browser.isFirefox || Browser.isChrome || (Browser.isIE && parseInt(Browser.ieVersion()) >= 9)) {
             if (!this.data('plugin_okSearch')) {
                 okSearchInstance = new OKSearch(this, options);
+                this.data('plugin_okSearch', okSearchInstance);
                 return okSearchInstance;
             }
             return this.data('plugin_okSearch');
